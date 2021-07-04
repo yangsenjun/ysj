@@ -81,9 +81,11 @@
     },
     mounted(){
       this.getOrderList();
-      this.getBalance();
+      this.remoteBalance();
+      this.remoteReport();
       this.timer = setInterval(this.getOrderList, 15000);
-      this.timer = setInterval(this.getBalance, 30000);
+      this.timer = setInterval(this.remoteBalance, 300000);
+      this.timer = setInterval(this.remoteReport, 300000);
     },
     methods:{
       getOrderList(){

@@ -15,7 +15,7 @@
             <input type="password" placeholder="请输入密码" v-model="password">
           </div>
           <div class="btn-box">
-            <a href="javascript:;" class="btn" @click="login">登录</a>
+            <a href="javascript:;" class="btn" @click="remoteLogin">登录</a>
           </div>
           <div class="tips">
           </div>
@@ -47,19 +47,17 @@ export default {
     }
   },
   methods:{
-    login(){
-      let { username,password } = this;
+    login(username,password,remoteToken){
       this.axios.post(
         '/sso/login',
          Qs.stringify({
          username:username,
          password:password,
-         remoteToken:'',
+         remoteToken:remoteToken,
          }),{headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).then((res)=>{
 
             this.$cookie.set('token',res.tokenHead+' '+res.token,{expires:'1M'});
             this.$store.dispatch('saveToken',res.token);
-
 
            var tokenStr= decodeURIComponent(escape(window.atob(res.token.split('.')[1])));
            let username = JSON.parse(tokenStr).user_name;

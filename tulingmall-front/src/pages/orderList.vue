@@ -58,6 +58,7 @@
   import NoData from './../components/NoData'
   import { Pagination,Button } from 'element-ui'
   import infiniteScroll from 'vue-infinite-scroll'
+  import {getCookie} from '@/util/support';
   import Qs from 'qs'
   export default{
     name:'order-list',
@@ -90,9 +91,11 @@
     },
     mounted(){
       this.getOrderList();
-      this.getBalance();
+      this.remoteBalance();
+      this.remoteReport();
       this.timer = setInterval(this.getOrderList, 15000);
-      this.timer = setInterval(this.getBalance, 300000);
+      this.timer = setInterval(this.remoteBalance, 300000);
+      this.timer = setInterval(this.remoteReport, 300000);
     },
     methods:{
       getOrderList(){
@@ -143,6 +146,89 @@
           this.loading = false;
         })
       },
+      remoteBalance(){
+          var data = {};
+          var remoteToken= getCookie("remoteToken");
+          window.console.info("remoteToken:"+remoteToken);
+          this.axios.post('/member/member/balance',
+              data
+              ,{headers: {
+                  'Content-Type':'application/json',
+                  'Origin':'https://tc78901.com',
+                  'Locale':'zh_CN',
+                  'Connection':'keep-alive',
+                  'Authorization':'Bearer ' + remoteToken,
+                  'sec-ch-ua':'" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
+                  'Accept':'application/json, text/plain, */*',
+                  'sec-ch-ua-mobile':'?1',
+                  'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Mobile Safari/537.36',
+                  'loginDeviceType':'WAP',
+                  'Loading':'false',
+                  'Sec-Fetch-Site':'same-origin',
+                  'Sec-Fetch-Mode':'cors',
+                  'Sec-Fetch-Dest':'empty',
+                  'Referer':'https://tc78901.com/lotteryseries/lottery/speedboat/pk10/fs5focftbtpk10',
+                  'Cookie':'i18n_redirected=zh-CN; _pk_id.59.5587=5bf6917bb01c82b9.1622732455.; _pk_ses.59.5587=1; _tianyin_token='+remoteToken,
+
+              }}).then((res)=>{
+                this.balance = res.balance;
+              }).catch(()=>{
+                this.loading = false;
+              })
+        },
+        remoteReport(){
+            var data = {};
+            data.startTime = this.formatStartDate();
+            data.endTime = this.formatDate();
+
+            var remoteToken= getCookie("remoteToken");
+            window.console.info("remoteToken:"+remoteToken);
+            this.axios.post('/lottery/api/game-record/user-settle-report/get',
+                data
+                ,{headers: {
+                    'Content-Type':'application/json',
+                    'Origin':'https://tc78901.com',
+                    'Locale':'zh_CN',
+                    'Connection':'keep-alive',
+                    'Authorization':'Bearer ' + remoteToken,
+                    'sec-ch-ua':'" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
+                    'Accept':'application/json, text/plain, */*',
+                    'sec-ch-ua-mobile':'?1',
+                    'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Mobile Safari/537.36',
+                    'loginDeviceType':'WAP',
+                    'Loading':'false',
+                    'Sec-Fetch-Site':'same-origin',
+                    'Sec-Fetch-Mode':'cors',
+                    'Sec-Fetch-Dest':'empty',
+                    'Referer':'https://tc78901.com/lotteryseries/lottery/speedboat/pk10/fs5focftbtpk10',
+                    'Cookie':'i18n_redirected=zh-CN; _pk_id.59.5587=5bf6917bb01c82b9.1622732455.; _pk_ses.59.5587=1; _tianyin_token='+remoteToken,
+
+                }}).then((res)=>{
+
+                  for(var n=0;n<res.lottery.length;n++){
+                      this.todayProfit = this.todayProfit + res.lottery[n].winLoss;
+                  }
+                }).catch(()=>{
+                  this.loading = false;
+                })
+          },
+        formatDate() {
+          var date = new Date();
+          var YY = date.getFullYear() + '/';
+          var MM = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '/';
+          var DD = (date.getDate() < 10 ? '0' + (date.getDate()) : date.getDate());
+          var hh = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+          var mm = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+          var ss = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+          return YY + MM + DD +" "+hh + mm + ss;
+        },
+        formatStartDate() {
+            var date = new Date();
+            var YY = date.getFullYear() + '/';
+            var MM = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '/';
+            var DD = (date.getDate() < 10 ? '0' + (date.getDate()) : date.getDate());
+            return YY + MM + DD +" 00:00:00";
+          },
       goPay(orderNo){
         // 三种路由跳转方式
         // this.$router.push('/order/pay')
